@@ -1,0 +1,12 @@
+.DS_Store
+
+# locally built binaries (see README "Build")
+/agmem
+/agmemd
+/agmemserv
+/agmem-migrate
+
+# web build artifacts
+web/node_modules/
+web/dist/
+web/tsconfig.tsbuildinfo

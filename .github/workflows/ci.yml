@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      # web/dist is embedded into the server binary via //go:embed all:dist,
+      # so the SPA must be built before any `go build` / `go test` that
+      # compiles the web package.
+      - name: Build web assets
+        working-directory: web
+        run: npm ci && npm run build
+      - name: Build
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      # MySQL-backed store tests skip when AGMEM_TEST_MYSQL_DSN is unset;
+      # onnxruntime-dependent tests skip when the shared library is absent.
+      - name: Test
+        run: go test ./...
